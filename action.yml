@@ -1,0 +1,44 @@
+---
+name: Simple Notify Telegram Action
+description: Send a message to a Telegram chat through a bot.
+author: scottleechua
+branding:
+  icon: send
+  color: blue
+
+inputs:
+  bot-token:
+    description: Bot token from @BotFather. Pass it from a secret.
+    required: true
+  chat-id:
+    description: Chat ID to send the message to.
+    required: true
+  message:
+    description: Message text, sent as plain text.
+    required: true
+  disable-link-preview:
+    description: Hide link previews in the message.
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Send Telegram message
+      shell: bash
+      env:
+        TG_TOKEN: ${{ inputs.bot-token }}
+        TG_CHAT_ID: ${{ inputs.chat-id }}
+        TG_MESSAGE: ${{ inputs.message }}
+        TG_DISABLE_PREVIEW: ${{ inputs.disable-link-preview }}
+      run: |
+        args=(--data-urlencode "chat_id=${TG_CHAT_ID}" --data-urlencode "text=${TG_MESSAGE}")
+        if [ "$TG_DISABLE_PREVIEW" = "true" ]; then
+          args+=(--data-urlencode 'link_preview_options={"is_disabled":true}')
+        fi
+        if ! response=$(curl -sS --fail-with-body -X POST \
+            "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" "${args[@]}"); then
+          echo "::error::Telegram API request failed: ${response}"
+          exit 1
+        fi
+        echo "Message sent."
