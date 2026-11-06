@@ -1,5 +1,5 @@
 ---
-name: Simple Notify Telegram Action
+name: Scott's Simple Telegram Notify Action
 description: Send a message to a Telegram chat through a bot.
 author: scottleechua
 branding:
